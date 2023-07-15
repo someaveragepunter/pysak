@@ -3,7 +3,7 @@ from math import ceil
 from functools import lru_cache
 from typing import Iterable
 from multiprocessing.pool import ThreadPool
-from pysak.helpers import swallow_exception_wrapper
+from swarkn.helpers import swallow_exception_wrapper
 
 logger = logging.getLogger(__name__)
 
