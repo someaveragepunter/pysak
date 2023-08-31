@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "swarkn"
-version = "0.1.0"
+version = "0.1.2"
 description = "swiss army knife helper functions"
 authors = ["John Smith"]
 readme = "README.md"
