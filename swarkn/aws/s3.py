@@ -2,7 +2,7 @@ import boto3
 import pyarrow as pa
 import pyarrow.dataset as ds
 
-def storage_options(session: boto3.Session = None) -> dict:
+def session_storage_options(session: boto3.Session = None) -> dict:
     """
     convenience function used in DeltaTable
     """

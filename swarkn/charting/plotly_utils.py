@@ -1,6 +1,4 @@
-from typing import Iterable, Union
 import pandas as pd
-import networkx as nx
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import re
@@ -16,10 +14,12 @@ def stack(pivoted: DF) -> DF:
 
 
 def cfg2subgraph(subplots: dict[list[dict]],
-                 dfs: Union[DF, dict[str, DF]],
+                 dfs: DF | dict[str, DF],
                  chart_type='Scatter',
                  var_col='variable',
                  val_col='value',
+                 text_col: str = None,
+                 customdata_cols: list = None,
                  override_func=lambda *_, **__: {},
                  height=600,
 ) -> go.Figure:
@@ -47,6 +47,8 @@ def cfg2subgraph(subplots: dict[list[dict]],
                     kwrgs = {
                         'hoverlabel': {'namelength': -1},
                         'name': col,
+                        'customdata': subdf[customdata_cols] if customdata_cols else None,
+                        'text': subdf[text_col] if text_col else None,
                         'meta': dict(col=col, dfkey=dfkey),
                     } | kwargs_func(col, dfkey) | override_func(col, dfkey)
 
@@ -56,7 +58,8 @@ def cfg2subgraph(subplots: dict[list[dict]],
 
     # TODO: reorder legend into original input df order
     fig.update_xaxes(showticklabels=True)  # , tickangle=-45
-    fig.update_layout(height=len(keys) * height)
+    if len(keys) > 2:
+        fig.update_layout(height=len(keys) * height)
     return fig
 
 ################################# CHART COLOURS #########################################
@@ -64,8 +67,8 @@ def cfg2subgraph(subplots: dict[list[dict]],
 
 
 if __name__ == '__main__':
-    from functools import partial
     from swarkn.charting.colors import color_cfg, cycle_colors
+    from functools import partial
     import plotly.io as pio
     import pandas as pd
     pio.renderers.default = "browser"
@@ -85,15 +88,24 @@ if __name__ == '__main__':
             {
                 'regex': 'curves2',
                 'colors': cycle_colors,
-                'kwargs': {'line': {"dash": "dot"}},
+                'kwargs': {
+                    'line': {"dash": "dot"},
+                    'hovertemplate': '%{text} %{customdata}'
+                },
             },
         ],
     }
 
     df = pd.DataFrame({
+        'category': ['a'] * 5 + ['b'] * 5,
+        'category_text': ['aa'] * 4 + ['bb'] * 6,
         "curves1_xx": list(range(10)),
         "curves1a_xx": list(range(10, 20)),
         "curves2_xx": list(range(10, 20)),
-    }).reset_index().melt('index').set_index('index')
-    fig = cfg2subgraph(cfg, df)
+    }).reset_index().melt(['index', 'category', 'category_text']).set_index('index')
+    fig = cfg2subgraph(cfg, df,
+        # text_col='category_text',
+        # customdata_cols='category',
+    )
+
     fig.show()
