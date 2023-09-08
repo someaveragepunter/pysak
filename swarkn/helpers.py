@@ -1,3 +1,4 @@
+import frozendict
 import sys
 import logging
 from collections.abc import Mapping
@@ -40,4 +41,9 @@ def swallow_exception(**kwags):
         logger.error(ex, **kwags)
 
 
+def freeze(x):
+    from frozendict import frozendict
+    return frozendict(x) if isinstance(x, dict) else x
 
+def unfreeze(x):
+    return dict(x) if isinstance(x, Mapping) else x
