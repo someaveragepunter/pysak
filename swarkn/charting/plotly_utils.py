@@ -88,10 +88,12 @@ if __name__ == '__main__':
             {
                 'regex': 'curves2',
                 'colors': cycle_colors,
-                'kwargs': {
-                    'line': {"dash": "dot"},
-                    'hovertemplate': '%{text} %{customdata}'
-                },
+                'kwargs': lambda col, dfkey, *_: dict(
+                    line={"dash": "dot"},
+                    hovertemplate='%{text} %{customdata}',
+                    legendgroup='curves2',
+                    legendgrouptitle_text='curve2_title',
+                ),
             },
         ],
     }
