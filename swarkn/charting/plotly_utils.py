@@ -58,8 +58,10 @@ def cfg2subgraph(subplots: dict[list[dict]],
 
     # TODO: reorder legend into original input df order
     fig.update_xaxes(showticklabels=True)  # , tickangle=-45
-    if len(keys) > 2:
-        fig.update_layout(height=len(keys) * height)
+    fig.update_layout(height=subplot_row * height, legend=dict(
+        groupclick="toggleitem")
+    )
+
     return fig
 
 ################################# CHART COLOURS #########################################
