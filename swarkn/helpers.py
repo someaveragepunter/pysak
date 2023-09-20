@@ -1,6 +1,7 @@
 import frozendict
 import sys
 import logging
+from typing import Callable
 from collections.abc import Mapping
 from functools import lru_cache
 from time import perf_counter
@@ -47,3 +48,18 @@ def freeze(x):
 
 def unfreeze(x):
     return dict(x) if isinstance(x, Mapping) else x
+
+def clean_kwargs(fn: Callable, kwargs: dict) -> dict:
+    params = kwargs if 'kwargs' in fn.__code__.co_varnames else {
+        k: v for k, v in kwargs.items() if k in fn.__code__.co_varnames
+    }
+    return params
+
+def run_func(fn: Callable, *args, **kwargs):
+    """
+
+    removes irrelevant kwargs before calling fn
+    """
+    params = clean_kwargs(fn, kwargs)
+    return fn(*args, **params)
+
