@@ -8,8 +8,8 @@ def session_storage_options(session: boto3.Session = None) -> dict:
     """
     if not session:
         boto3.setup_default_session()
-        session = boto3.DEFAULT_SESSION
-    creds = session.get_credentials()
+        session = boto3.Session()
+    creds = session.get_credentials().get_frozen_credentials()
 
     storage_options = dict(
         AWS_REGION=session.region_name,
@@ -17,6 +17,9 @@ def session_storage_options(session: boto3.Session = None) -> dict:
         AWS_SECRET_ACCESS_KEY=creds.secret_key,
         AWS_S3_ALLOW_UNSAFE_RENAME='true'
     )
+    if creds.token:
+        storage_options['AWS_SESSION_TOKEN'] = creds.token
+
     return storage_options
 
 def parquet_dataset(path: str) -> ds.Dataset:
