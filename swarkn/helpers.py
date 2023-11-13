@@ -23,12 +23,13 @@ def is_local():
 def init_logger(level=logging.INFO, format='%(asctime)s|%(name)s|%(levelname)s|%(message)s'):
     logging.basicConfig(level=level, format=format)
 
-def swallow_exception_wrap(func, return_exception=False, **logger_kwags, ):
+def swallow_exception_wrap(func, return_exception=False, level='error', logger_=logger, **logger_kwags, ):
     def innerfunc(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.error(f'failed func: {func} args: {args}, kwargs: {kwargs}, exception: {e}', **logger_kwags)
+            fn = getattr(logger_, level)
+            fn(f'failed func: {func} args: {args}, kwargs: {kwargs}, exception: {e}', **logger_kwags)
             if return_exception:
                 return e
 
