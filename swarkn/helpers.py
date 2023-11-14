@@ -9,12 +9,13 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 @contextmanager
-def timer(msg=None) -> float:
+def timer(msg=None, logger_=logger, level='info') -> float:
     start = perf_counter()
     yield perf_counter() - start
     cost = perf_counter() - start
     msg = msg or "Time taken: {cost}s"
-    logger.info(msg.format(cost=cost))
+    fn = getattr(logger_, level)
+    fn(msg.format(cost=cost))
 
 @lru_cache()
 def is_local():
@@ -36,11 +37,12 @@ def swallow_exception_wrap(func, return_exception=False, level='error', logger_=
     return innerfunc
 
 @contextmanager
-def swallow_exception(**kwags):
+def swallow_exception(level='error', logger_=logger, **kwargs):
     try:
         yield
     except Exception as ex:
-        logger.error(ex, **kwags)
+        fn = getattr(logger_, level)
+        fn(ex, **kwargs)
 
 
 def freeze(x):
