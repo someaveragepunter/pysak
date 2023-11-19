@@ -10,28 +10,22 @@ from swarkn.helpers import swallow_exception_wrap
 logger = logging.getLogger(__name__)
 
 
-FREEZE_MAPPING = {
-    Mapping: frozendict,
-    MutableSequence: tuple,
-    MutableSet: frozenset
-}
-
-THAW_MAPPING = {
-    frozendict: dict,
-    tuple: list,
-    frozenset: set,
-}
-
 def freeze(x):
-    for fr, to in FREEZE_MAPPING.items():
-        if isinstance(x, fr):
-            return to(x)
+    if isinstance(x, Mapping):
+        return frozendict({k: freeze(v) for k, v in x.items()})
+    elif isinstance(x, MutableSequence):
+        return tuple(freeze(v) for v in x)
+    elif isinstance(x, MutableSet):
+        return frozenset(freeze(v) for v in x)
     return x
 
 def unfreeze(x):
-    for fr, to in THAW_MAPPING.items():
-        if isinstance(x, fr):
-            return to(x)
+    if isinstance(x, frozendict):
+        return {k: unfreeze(v) for k, v in x.items()}
+    elif isinstance(x, tuple):
+        return [unfreeze(v) for v in x]
+    elif isinstance(x, frozenset):
+        return {unfreeze(v) for v in x}
     return x
 
 
