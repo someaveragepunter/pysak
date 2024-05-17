@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "swarkn"
-version = "0.1.11"
+version = "0.1.12"
 description = "swiss army knife helper functions"
 authors = ["John Smith"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">= 3.9"
+python = ">= 3.7"
 frozendict = "*"
 cachetools = "*"
 
