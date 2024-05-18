@@ -2,6 +2,7 @@ from __future__ import annotations
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from typing import List, Dict
 import re
 from itertools import cycle
 
@@ -14,8 +15,8 @@ def stack(pivoted: DF) -> DF:
     return df
 
 
-def cfg2subgraph(subplots: dict[list[dict]],
-                 dfs: DF | dict[str, DF],
+def cfg2subgraph(subplots: Dict[List[dict]],
+                 dfs: DF | Dict[str, DF],
                  chart_type='Scatter',
                  var_col='variable',
                  val_col='value',
