@@ -1,11 +1,15 @@
 from __future__ import annotations
+
+import logging
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from typing import List, Dict
+from typing import List, Dict, Iterable
 import re
 from itertools import cycle
 
+logger = logging.getLogger(__name__)
 DF = pd.DataFrame
 
 def stack(pivoted: DF) -> DF:
@@ -14,6 +18,8 @@ def stack(pivoted: DF) -> DF:
     df.columns = ['variable', 'value']
     return df
 
+def cols2hovertemplate(cols: list) -> str:
+    return '<br>'.join([f'{col}: %{{customdata[{i}]}}' for i, col in enumerate(cols)])
 
 def cfg2subgraph(subplots: Dict[List[dict]],
                  dfs: DF | Dict[str, DF],
@@ -21,7 +27,7 @@ def cfg2subgraph(subplots: Dict[List[dict]],
                  var_col='variable',
                  val_col='value',
                  text_col: str = None,
-                 customdata_cols: list = None,
+                 customdata_cols: Iterable = tuple(),
                  override_func=lambda *_, **__: {},
                  height=600,
 ) -> go.Figure:
@@ -45,13 +51,19 @@ def cfg2subgraph(subplots: Dict[List[dict]],
                 chart_type = cfg.get('type', chart_type)
                 kwargs_ = cfg.get('kwargs', {})
                 kwargs_func = lambda *x: kwargs_ if isinstance(kwargs_, dict) else kwargs_(*x)
-                for col, subdf in df.query(f"{var_col}.str.contains(@cfg['regex'])").groupby(var_col):
+                qry = f"{var_col}.str.contains('{cfg['regex']}')"
+                logger.debug(qry)
+                for col, subdf in df.query(qry).groupby(var_col):
+                    filtered_customdata_cols = [c for c in customdata_cols if c in subdf]
+                    customdata = (subdf[filtered_customdata_cols] if filtered_customdata_cols else subdf
+                                  ).dropna(axis=1, how='all')
                     kwrgs = {
                         'hoverlabel': {'namelength': -1},
                         'name': col,
-                        'customdata': subdf[customdata_cols] if customdata_cols else None,
+                        'customdata': customdata,
                         'text': subdf[text_col] if text_col else None,
                         'meta': dict(col=col, dfkey=dfkey),
+                        'hovertemplate': cols2hovertemplate(customdata.columns)
                     } | kwargs_func(col, dfkey) | override_func(col, dfkey)
 
                     gob = getattr(go, chart_type)(x=subdf.index, y=subdf[val_col], **kwrgs)
@@ -94,7 +106,6 @@ if __name__ == '__main__':
                 'colors': cycle_colors,
                 'kwargs': lambda col, dfkey, *_: dict(
                     line={"dash": "dot"},
-                    hovertemplate='%{text} %{customdata}',
                     legendgroup='curves2',
                     legendgrouptitle_text='curve2_title',
                 ),
